@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: fastapi_app
+    ports:
+      - "8080:8080"
+    depends_on:
+      - chroma
+    environment:
+      - HOST=http://chroma:8000/
+      - CHROMADB_PORT=8000
+
+  chroma:
+    image: chromadb/chroma:latest
+    container_name: chroma
+    ports:
+      - "8000:8000"
+    volumes:
+      - chroma_data:/data
+
+volumes:
+  chroma_data:
