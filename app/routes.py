@@ -12,6 +12,8 @@ from app.utils import (
     folder_path,
 )
 
+from scrape.scraper import get_all_jobs
+
 router = APIRouter()
 
 @router.get("/healthcheck", tags=["Healthcheck"])
@@ -85,5 +87,13 @@ async def clear_db():
     try:
         result = clear_database()
         return JSONResponse(content=result)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/data", tags=["Scraper"])
+async def scraped_data() -> list[dict]:
+    try:
+        return get_all_jobs()
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

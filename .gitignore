@@ -19,7 +19,6 @@ env/
 *.log
 
 # Database files
-db/
 
 # Uploaded PDFs
 pdf/
