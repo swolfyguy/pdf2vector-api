@@ -5,14 +5,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="730eb310-dd16-4e49-9942-f053297a9e3d" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.dockerignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.env" beforeDir="false" afterPath="$PROJECT_DIR$/.env" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scrape/db/model/work.py" beforeDir="false" afterPath="$PROJECT_DIR$/scrape/db/model/work.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scrape/db/sql/work.sql" beforeDir="false" afterPath="$PROJECT_DIR$/scrape/db/sql/work.sql" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scrape/db/transaction.py" beforeDir="false" afterPath="$PROJECT_DIR$/scrape/db/transaction.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scrape/scraper.py" beforeDir="false" afterPath="$PROJECT_DIR$/scrape/scraper.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scrape/url/urls.txt" beforeDir="false" afterPath="$PROJECT_DIR$/scrape/url/urls.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/utils.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -60,7 +58,7 @@
     "Python.scraper.executor": "Run",
     "Python.transaction.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "pranav",
+    "git-widget-placeholder": "Merging pranav",
     "last_opened_file_path": "D:/ProjectOffice/pdf2vector-api"
   }
 }]]></component>

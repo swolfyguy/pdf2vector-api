@@ -1,11 +1,14 @@
 import os
 import shutil
+from app.models import JobPosting
 from langchain_community.llms import Ollama
 from langchain_community.vectorstores import Chroma
 from langchain_community.embeddings import FastEmbedEmbeddings
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.chains import create_retrieval_chain
 from langchain.prompts import PromptTemplate
+from langchain.schema import Document
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 from pdf_processing import extract_text_from_pdf, generate_embeddings, store_embeddings
 
 folder_path = "db"
@@ -20,6 +23,38 @@ raw_prompt = PromptTemplate.from_template(
     [/INST]
 """
 )
+
+def process_and_store_text(job_posting: JobPosting):
+    embedding = FastEmbedEmbeddings()
+    
+    # Convert JobPosting to text
+    text = f"""
+    Job Title: {job_posting.JobTitle}
+    Posted On: {job_posting.PostedOn}
+    Location: {job_posting.Location}
+    Description: {job_posting.Description}
+    Features:
+    {' '.join([f'- {feature.Title}: {feature.Description}' for feature in job_posting.Features])}
+    """
+    
+    # Create a Document object
+    doc = Document(page_content=text, metadata={"source": "user_input"})
+    
+    # Split the text if it's too long
+    text_splitter = RecursiveCharacterTextSplitter(
+        chunk_size=1024, chunk_overlap=80, length_function=len, is_separator_regex=False
+    )
+    chunks = text_splitter.split_documents([doc])
+    
+    # Store in Chroma
+    vector_store = Chroma(persist_directory=folder_path, embedding_function=embedding)
+    vector_store.add_documents(chunks)
+    vector_store.persist()
+    
+    return {
+        "status": "Successfully Stored",
+        "chunks": len(chunks)
+    }
 
 def process_query(query: str) -> str:
     return cached_llm.invoke(query)
