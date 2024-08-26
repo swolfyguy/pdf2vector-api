@@ -17,13 +17,13 @@ def __create_work_instance(data: dict) -> Work:
     Create and return an instance of the Work class.
     """
     return Work(
-        title=data["title"],
-        exp=data["exp"],
-        rate=data["rate"],
-        link=data["link"],
+        job_title=data["job_title"],
+        posted_on=data["posted_on"],
+        description=json.dumps(data["description"]),
         job_data=json.dumps(data["job_data"]),
-        other=json.dumps(data["other"])
+        link=data["link"]
     )
+
 
 
 def insert_data(data: dict) -> None:
@@ -36,13 +36,35 @@ def insert_data(data: dict) -> None:
         print(f"An error occurred: {e}")
 
 
+def get_all() -> list[dict]:
+    try:
+        all_work = session.query(Work).all()
+        work_list = [
+            {
+                "id": work.id,
+                "job_title": work.job_title,
+                "posted_on": work.posted_on,
+                "description": work.description,
+                "job_data": work.job_data,
+                "link": work.link
+            }
+            for work in all_work
+        ]
+        return work_list
+
+    except Exception as e:
+        print(f"unable to fetch data: {e}")
+    finally:
+        session.close()
+
+
 if __name__ == '__main__':
     data = {
-        "title": "Backend Engineer",
-        "exp": "5 years",
-        "rate": "$50/hr",
-        "link": "https://example.com/job/123",
-        "job_data": "Responsibilities: Develop software... Requirements: Experience with Python...",
-        "other": "Additional notes..."
+        "job_title": "work.job_title",
+        "posted_on": "work.posted_on",
+        "description": "work.descriptionkuhdffiuehfe",
+        "job_data": "work.job_data",
+        "link": "work.link"
     }
     insert_data(data)
+    print(get_all())

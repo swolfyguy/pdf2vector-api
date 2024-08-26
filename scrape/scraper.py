@@ -1,16 +1,8 @@
-import random
-import time
-
-import requests
 from bs4 import BeautifulSoup
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 
-from db.transaction import insert_data
-
-
-def __get_ip_from_file(file_path: str) -> list:
-    with open(file_path, 'r') as file:
-        ip_list = file.read().splitlines()
-    return ip_list
+from scrape.db.transaction import insert_data, get_all
 
 
 def __get_urls_from_file(file_path: str) -> list:
@@ -19,115 +11,111 @@ def __get_urls_from_file(file_path: str) -> list:
     return url_list
 
 
-def __get_proxy(ip_list: list) -> str:
-    return random.choice(ip_list)
 
 
-def __fetch_webpage(webpage_url: str) -> BeautifulSoup:
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0 Safari/537.36',
+def fetch_page_content(url):
+    # Set up Chrome options
+    chrome_options = Options()
+    chrome_options.add_argument("--headless")  # Run in headless mode (no UI)
+
+    driver = webdriver.Chrome()
+
+    # Fetch the webpage
+    driver.get(url)
+
+    # Get page content
+    page_content = driver.page_source
+
+    # Clean up
+    driver.quit()
+
+    return page_content
+
+
+def extract_job_title(soup):
+    # Extract the job title
+    header = soup.find('header', class_='air3-card-section py-4x')
+    if header:
+        job_title = header.find('h4').get_text(strip=True) if header.find('h4') else 'Job Title not found'
+    else:
+        job_title = 'Job Title not found'
+    return job_title
+
+
+def extract_posted_on(soup):
+    # Extract posted time
+    header = soup.find('header', class_='air3-card-section py-4x')
+    posted_on_div = header.find('div',
+                                class_='mt-5 d-flex align-items-center text-light-on-muted posted-on-line') if header else None
+    posted_on = posted_on_div.find('span').get_text(strip=True) if posted_on_div and posted_on_div.find(
+        'span') else 'Posted time not found'
+    return posted_on
+
+
+def extract_location(soup):
+    # Extract location
+    header = soup.find('header', class_='air3-card-section py-4x')
+    location_div = header.find('div', class_='d-inline-flex align-items-center text-base-sm mt-2') if header else None
+    location = location_div.find('span').get_text(strip=True) if location_div and location_div.find(
+        'span') else 'Location not found'
+    return location
+
+
+def extract_description(soup):
+    # Extract the description
+    description_div = soup.find('div', class_='break mt-2')
+    description = description_div.get_text(separator='\n', strip=True) if description_div else 'Description not found'
+    return description
+
+
+def extract_features(soup):
+    # Extract features
+    features_list = []
+    features_ul = soup.find('ul', class_='features list-unstyled m-0')
+    if features_ul:
+        for li in features_ul.find_all('li'):
+            feature_title = li.find('strong').get_text(strip=True) if li.find('strong') else 'Feature title not found'
+            feature_description = li.find('div', class_='description').get_text(strip=True) if li.find('div',
+                                                                                                       class_='description') else 'Feature description not found'
+            features_list.append({
+                'Title': feature_title,
+                'Description': feature_description
+            })
+    return features_list
+
+
+def extract_job_info(page_content, url):
+    # Parse the content with BeautifulSoup
+    soup = BeautifulSoup(page_content, 'lxml')
+
+    job_title = extract_job_title(soup)
+    posted_on = extract_posted_on(soup)
+    location = extract_location(soup)
+    description = extract_description(soup)
+    features = extract_features(soup)
+
+    data = {
+        'job_title': job_title,
+        'posted_on': posted_on,
+        'description': description,
+        'job_data': features,
+        'link': url
     }
-    try:
-        response = requests.get(webpage_url, headers=headers)
-        if response.status_code != 200:
-            print(f"Failed to retrieve content. Status code: {response.status_code}")
-
-        return BeautifulSoup(response.text, 'lxml')
-    except Exception:
-        print("Failed to retrive content ")
+    insert_data(data)
+    return data
 
 
-def __extract_job_data(soup: BeautifulSoup) -> dict:
-    responsibilities, requirements = "", ""
-    parsing_responsibilities = parsing_requirements = False
 
-    # Extract responsibilities and requirements
-    for p in soup.find_all('p', class_='text-body-sm'):
-        content = p.text.strip()
-
-        # Start parsing responsibilities
-        if 'Responsibilities:' in content:
-            parsing_responsibilities = True
-            responsibilities = content.split('Responsibilities:')[1].strip()
-
-        # Start parsing requirements
-        elif 'Requirements:' in content:
-            parsing_requirements = True
-            requirements = content.split('Requirements:')[1].strip()
-            parsing_responsibilities = False
-
-        # Collect responsibilities content
-        elif parsing_responsibilities:
-            if 'Requirements:' in content:
-                # Stop collecting if 'Requirements:' is encountered
-                parsing_responsibilities = False
-            else:
-                responsibilities += " " + content
-
-        # Collect requirements content
-        elif parsing_requirements:
-            if any(phrase in content for phrase in ['Responsibilities:', 'Other:', 'Details:']):
-                # Stop collecting if a new section is encountered
-                parsing_requirements = False
-            else:
-                requirements += " " + content
-
-    # Clean up any trailing whitespace
-    responsibilities = responsibilities.strip()
-    requirements = requirements.strip()
-
-    job_data = {
-        "job_data": responsibilities,
-    }
-
-    return job_data
-
-
-def __extract_job_details(soup: BeautifulSoup) -> dict:
-    job_details = {}
-    for li in soup.find_all('li'):
-        detail_key = li.find('strong').text.strip() if li.find('strong') else None
-        detail_value = li.find('div', class_='description').text.strip() if li.find('div',
-                                                                                    class_='description') else None
-        if detail_key and detail_value:
-            job_details[detail_value] = detail_key
-    return job_details
-
-
-def extract_details(url: str):
-    try:
-        soup: BeautifulSoup = __fetch_webpage(webpage_url=url)
-        print("Webpage fetched\nextracting details.....")
-        time.sleep(random.randint(1, 10))
-        job_details: dict = __extract_job_details(soup=soup)
-
-        rate: str = job_details.get("Hourly", "N/A") + " Hourly" if "Hourly" in job_details else job_details.get(
-            "Fixed-price", "N/A") + " Fixed-price"
-        exp: str = job_details.get("Experience Level", "N/A")
-        other: list[dict] = [{"Project Type": job_details.get("Project Type", "N/A")}]
-        link: str = url
-        print("details extracted")
-        time.sleep(random.randint(1, 10))
-        data: dict = {"title": soup.find('h4').text.strip() if soup.find('h4') else "N/A",
-                      "exp": exp,
-                      "rate": rate,
-                      "link": link,
-                      "job_data": __extract_job_data(soup=soup),
-                      "other": other}
-        print(f"inserting data : {data}")
-        insert_data(data)
-        print("data inserted\n-------------------------------------------------------------------------")
-
-    except requests.exceptions.ProxyError:
-        print(f"Proxy failed.....")
+def get_all_jobs() -> list[dict]:
+    return get_all()
 
 
 if __name__ == '__main__':
-
-    print("getting urls")
-    time.sleep(random.randint(1, 10))
     url_list: list = __get_urls_from_file("./url/urls.txt")
     for url in url_list:
-        print(f"exceuting url : {url}")
-        extract_details(url=url)
-        time.sleep(random.randint(1, 10))
+        print(f"Job Info for URL: {url}")
+        page_content = fetch_page_content(url)
+        job_info = extract_job_info(page_content, url)
+        print(f"Job Info for URL: {url}")
+        print(job_info)
+        print("\n" + "=" * 80 + "\n")

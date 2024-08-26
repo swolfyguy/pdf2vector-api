@@ -122,3 +122,4 @@ yarl==1.9.4
 zipp==3.20.0
 
 beautifulsoup4~=4.12.3
+selenium~=4.23.1

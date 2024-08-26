@@ -1,9 +1,8 @@
 CREATE TABLE work (
-  id BIGSERIAL PRIMARY KEY,
-  title VARCHAR,
-  exp VARCHAR,
-  rate VARCHAR,
-  link VARCHAR,
-  job_data TEXT,
-  other TEXT
+    id BIGSERIAL PRIMARY KEY,
+    job_title VARCHAR,
+    posted_on VARCHAR,
+    description VARCHAR,
+    job_data TEXT,
+    link VARCHAR
 );

@@ -9,10 +9,9 @@ class Work(Base):
     __tablename__ = 'work'
 
     id = Column(BigInteger, primary_key=True, autoincrement=True)
-    title = Column(String)
-    exp = Column(String)
-    rate = Column(String)
-    link = Column(String)
+    job_title = Column(String)
+    posted_on = Column(String)
+    description = Column(String)
     job_data = Column(Text)
-    other = Column(Text)
+    link = Column(String)
 
