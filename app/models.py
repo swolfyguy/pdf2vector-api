@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Dict, Optional
 
 class Query(BaseModel):
     query: str
@@ -10,11 +10,15 @@ class Feature(BaseModel):
     Description: str
 
 class JobPosting(BaseModel):
-    JobTitle: str
-    PostedOn: str
-    Location: str
-    Description: str
-    Features: List[Feature]
+    job_title: str
+    posted_on: str
+    location: str
+    description: str
+    job_data: List[Dict[str, str]]
+    link: str
+
+class ScrapedData(BaseModel):
+    jobs: List[JobPosting]
 
 class TextInput(BaseModel):
     job_posting: JobPosting
