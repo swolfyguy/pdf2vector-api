@@ -1,8 +1,9 @@
 import os
 from fastapi import APIRouter, File, UploadFile, HTTPException
 from fastapi.responses import JSONResponse
-from app.models import Query
+from app.models import Query,TextInput
 from app.utils import (
+    process_and_store_text,
     process_query,
     process_pdf_query,
     save_and_process_pdf,
@@ -45,6 +46,14 @@ async def show_documents():
     try:
         documents = get_documents_in_database()
         return JSONResponse(content={"documents": documents})
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/add_text", tags=["Documents"])
+async def add_text(text_input: TextInput):
+    try:
+        result = process_and_store_text(text_input.job_posting)
+        return JSONResponse(content=result)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
