@@ -19,6 +19,3 @@ class JobPosting(BaseModel):
 
 class ScrapedData(BaseModel):
     jobs: List[JobPosting]
-
-class TextInput(BaseModel):
-    job_posting: JobPosting

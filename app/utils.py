@@ -11,7 +11,8 @@ from langchain.schema import Document
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from pdf_processing import extract_text_from_pdf, generate_embeddings, store_embeddings
 
-folder_path = "db"
+pdf_folder_path = "db_pdf"
+scrape_folder_path = "db_scrape"
 cached_llm = Ollama(model="llama3.1")
 
 raw_prompt = PromptTemplate.from_template(
@@ -24,47 +25,23 @@ raw_prompt = PromptTemplate.from_template(
 """
 )
 
-def process_and_store_text(job_posting: JobPosting):
-    embedding = FastEmbedEmbeddings()
-    
-    # Convert JobPosting to text
-    text = f"""
-    Job Title: {job_posting.JobTitle}
-    Posted On: {job_posting.PostedOn}
-    Location: {job_posting.Location}
-    Description: {job_posting.Description}
-    Features:
-    {' '.join([f'- {feature.Title}: {feature.Description}' for feature in job_posting.Features])}
-    """
-    
-    # Create a Document object
-    doc = Document(page_content=text, metadata={"source": "user_input"})
-    
-    # Split the text if it's too long
-    text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=1024, chunk_overlap=80, length_function=len, is_separator_regex=False
-    )
-    chunks = text_splitter.split_documents([doc])
-    
-    # Store in Chroma
-    vector_store = Chroma(persist_directory=folder_path, embedding_function=embedding)
-    vector_store.add_documents(chunks)
-    vector_store.persist()
-    
-    return {
-        "status": "Successfully Stored",
-        "chunks": len(chunks)
-    }
+job_query_prompt = PromptTemplate.from_template(
+    """ 
+    <s>[INST] You are a job search assistant, skilled at finding relevant job postings. If you do not have an answer from the provided information, say so. Always include the Serial Number of relevant job postings in your answer. [/INST] </s>
+    [INST] {input}
+            Context: {context}
+            Answer:
+    [/INST]
+"""
+)
 
 def process_query(query: str) -> str:
     return cached_llm.invoke(query)
 
 def process_pdf_query(query: str, include_sources: bool = False):
-    print("Loading vector store")
     embedding = FastEmbedEmbeddings()
-    vector_store = Chroma(persist_directory=folder_path, embedding_function=embedding)
+    vector_store = Chroma(persist_directory=pdf_folder_path, embedding_function=embedding)
     
-    print("Creating chain")
     retriever = vector_store.as_retriever(
         search_type="similarity_score_threshold",
         search_kwargs={
@@ -87,6 +64,37 @@ def process_pdf_query(query: str, include_sources: bool = False):
     else:
         return result["answer"], None
 
+def process_job_query(query: str, include_sources: bool = False):
+    embedding = FastEmbedEmbeddings()
+    vector_store = Chroma(persist_directory=scrape_folder_path, embedding_function=embedding)
+    
+    retriever = vector_store.as_retriever(
+        search_type="similarity_score_threshold",
+        search_kwargs={
+            "k": 5,
+            "score_threshold": 0.5,
+        },
+    )
+    
+    document_chain = create_stuff_documents_chain(cached_llm, job_query_prompt)
+    chain = create_retrieval_chain(retriever, document_chain)
+    
+    result = chain.invoke({"input": query})
+    
+    if include_sources:
+        sources = [
+            {
+                "source": doc.metadata["source"],
+                "job_id": doc.metadata.get("job_id"),
+                "serial_number": doc.metadata.get("serial_number"),
+                "page_content": doc.page_content
+            }
+            for doc in result["context"]
+        ]
+        return result["answer"], sources
+    else:
+        return result["answer"], None
+
 def save_and_process_pdf(file):
     file_name = file.filename
     save_file = f"pdf/{file_name}"
@@ -97,11 +105,9 @@ def save_and_process_pdf(file):
     except Exception as e:
         raise Exception(f"Could not save file: {str(e)}")
     
-    print(f"filename: {file_name}")
-    
     chunks = extract_text_from_pdf(save_file)
     embedding, chunks = generate_embeddings(chunks)
-    vector_store = store_embeddings(embedding, chunks, folder_path)
+    vector_store = store_embeddings(embedding, chunks, pdf_folder_path)
     
     return {
         "status": "Successfully Uploaded",
@@ -112,12 +118,10 @@ def save_and_process_pdf(file):
 
 def get_documents_in_database():
     embedding = FastEmbedEmbeddings()
-    vector_store = Chroma(persist_directory=folder_path, embedding_function=embedding)
+    vector_store = Chroma(persist_directory=pdf_folder_path, embedding_function=embedding)
     
-    # Get all documents
     documents = vector_store.get()
     
-    # Extract unique source filenames
     unique_sources = set()
     for metadata in documents['metadatas']:
         if 'source' in metadata:
@@ -129,12 +133,18 @@ def get_documents_in_database():
 
 def clear_database():
     embedding = FastEmbedEmbeddings()
-    vector_store = Chroma(persist_directory=folder_path, embedding_function=embedding)
     
-    # Delete all documents from the vector store
-    vector_store.delete_collection()
-    vector_store = Chroma(persist_directory=folder_path, embedding_function=embedding)
-    vector_store.persist()
+    # Clear PDF database
+    vector_store_pdf = Chroma(persist_directory=pdf_folder_path, embedding_function=embedding)
+    vector_store_pdf.delete_collection()
+    vector_store_pdf = Chroma(persist_directory=pdf_folder_path, embedding_function=embedding)
+    vector_store_pdf.persist()
+    
+    # Clear scraped data database
+    vector_store_scrape = Chroma(persist_directory=scrape_folder_path, embedding_function=embedding)
+    vector_store_scrape.delete_collection()
+    vector_store_scrape = Chroma(persist_directory=scrape_folder_path, embedding_function=embedding)
+    vector_store_scrape.persist()
     
     # Delete all PDFs in the "pdf" directory
     pdf_directory = "pdf"
@@ -149,4 +159,4 @@ def clear_database():
             except Exception as e:
                 print(f'Failed to delete {file_path}. Reason: {e}')
     
-    return {"message": "Database cleared and PDFs deleted successfully"}
+    return {"message": "Databases cleared and PDFs deleted successfully"}
