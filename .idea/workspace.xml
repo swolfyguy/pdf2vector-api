@@ -5,8 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="730eb310-dd16-4e49-9942-f053297a9e3d" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/scrape/util/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/scrape/util/link.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/scrape/util/scheduler.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scrape/scraper.py" beforeDir="false" afterPath="$PROJECT_DIR$/scrape/scraper.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -28,21 +31,21 @@
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
-  "lastFilter": {
-    "state": "OPEN",
-    "assignee": "pranavkolte"
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;pranavkolte&quot;
   }
-}]]></component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/swolfyguy/pdf2vector-api.git",
-    "accountId": "3b0b5e77-ef22-4aed-aed6-0593828c95ee"
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/swolfyguy/pdf2vector-api.git&quot;,
+    &quot;accountId&quot;: &quot;3b0b5e77-ef22-4aed-aed6-0593828c95ee&quot;
   }
-}]]></component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 3
-}]]></component>
+}</component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 3
+}</component>
   <component name="ProjectId" id="2lBZBS3hYLgOMQ0snOpwEsdz1Pv" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -52,12 +55,18 @@
   "keyToString": {
     "Python.main.executor": "Run",
     "Python.scraper.executor": "Run",
+    "Python.scratch.executor": "Run",
     "Python.transaction.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "git-widget-placeholder": "pranav",
-    "last_opened_file_path": "D:/ProjectOffice/pdf2vector-api"
+    "last_opened_file_path": "D:/Project/back-end/python/linkedin_skills"
   }
 }]]></component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="D:\ProjectOffice\pdf2vector-api\scrape\util" />
+    </key>
+  </component>
   <component name="RunManager" selected="Python.scraper">
     <configuration name="main" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="pdf2vector-api" />
@@ -103,6 +112,28 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="scratch" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="pdf2vector-api" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$APPLICATION_CONFIG_DIR$/scratches" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$APPLICATION_CONFIG_DIR$/scratches/scratch.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="transaction" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="pdf2vector-api" />
       <option name="ENV_FILES" value="" />
@@ -128,8 +159,9 @@
     <recent_temporary>
       <list>
         <item itemvalue="Python.scraper" />
-        <item itemvalue="Python.transaction" />
+        <item itemvalue="Python.scratch" />
         <item itemvalue="Python.main" />
+        <item itemvalue="Python.transaction" />
       </list>
     </recent_temporary>
   </component>
