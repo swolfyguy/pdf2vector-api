@@ -3,6 +3,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 
 from scrape.db.transaction import insert_data, get_all
+from scrape.util.link import extract_links
 
 
 def __get_urls_from_file(file_path: str) -> list:
@@ -11,29 +12,19 @@ def __get_urls_from_file(file_path: str) -> list:
     return url_list
 
 
-
-
 def fetch_page_content(url):
-    # Set up Chrome options
     chrome_options = Options()
-    chrome_options.add_argument("--headless")  # Run in headless mode (no UI)
-
+    chrome_options.add_argument("--headless")
     driver = webdriver.Chrome()
 
-    # Fetch the webpage
     driver.get(url)
-
-    # Get page content
     page_content = driver.page_source
 
-    # Clean up
     driver.quit()
-
     return page_content
 
 
 def extract_job_title(soup):
-    # Extract the job title
     header = soup.find('header', class_='air3-card-section py-4x')
     if header:
         job_title = header.find('h4').get_text(strip=True) if header.find('h4') else 'Job Title not found'
@@ -43,7 +34,6 @@ def extract_job_title(soup):
 
 
 def extract_posted_on(soup):
-    # Extract posted time
     header = soup.find('header', class_='air3-card-section py-4x')
     posted_on_div = header.find('div',
                                 class_='mt-5 d-flex align-items-center text-light-on-muted posted-on-line') if header else None
@@ -52,24 +42,13 @@ def extract_posted_on(soup):
     return posted_on
 
 
-def extract_location(soup):
-    # Extract location
-    header = soup.find('header', class_='air3-card-section py-4x')
-    location_div = header.find('div', class_='d-inline-flex align-items-center text-base-sm mt-2') if header else None
-    location = location_div.find('span').get_text(strip=True) if location_div and location_div.find(
-        'span') else 'Location not found'
-    return location
-
-
 def extract_description(soup):
-    # Extract the description
     description_div = soup.find('div', class_='break mt-2')
     description = description_div.get_text(separator='\n', strip=True) if description_div else 'Description not found'
     return description
 
 
 def extract_features(soup):
-    # Extract features
     features_list = []
     features_ul = soup.find('ul', class_='features list-unstyled m-0')
     if features_ul:
@@ -84,13 +63,11 @@ def extract_features(soup):
     return features_list
 
 
-def extract_job_info(page_content, url):
-    # Parse the content with BeautifulSoup
+def extract_job_info(page_content, url: str):
     soup = BeautifulSoup(page_content, 'lxml')
 
     job_title = extract_job_title(soup)
     posted_on = extract_posted_on(soup)
-    location = extract_location(soup)
     description = extract_description(soup)
     features = extract_features(soup)
 
@@ -105,17 +82,24 @@ def extract_job_info(page_content, url):
     return data
 
 
-
 def get_all_jobs() -> list[dict]:
     return get_all()
 
 
 if __name__ == '__main__':
-    url_list: list = __get_urls_from_file("./url/urls.txt")
-    for url in url_list:
-        print(f"Job Info for URL: {url}")
-        page_content = fetch_page_content(url)
-        job_info = extract_job_info(page_content, url)
-        print(f"Job Info for URL: {url}")
-        print(job_info)
-        print("\n" + "=" * 80 + "\n")
+    from util.scheduler import job_data_extract
+    QUERY: str = "seo"
+    BASE_URL = f"https://www.upwork.com/nx/search/jobs/?q={QUERY}"
+    extract_links(BASE_URL)
+    page_count = 1
+
+    while True:
+        try:
+            print("getting new page")
+            page_count += 1
+            page_url = f"{BASE_URL}&page={page_count}"
+            job_data_extract(page_url)
+
+        except Exception as e:
+            print(f"No more pages or error: {e}")
+            break
