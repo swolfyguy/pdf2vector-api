@@ -4,13 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="730eb310-dd16-4e49-9942-f053297a9e3d" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/scrape/util/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scrape/util/link.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scrape/util/scheduler.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scrape/scraper.py" beforeDir="false" afterPath="$PROJECT_DIR$/scrape/scraper.py" afterDir="false" />
-    </list>
+    <list default="true" id="730eb310-dd16-4e49-9942-f053297a9e3d" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
