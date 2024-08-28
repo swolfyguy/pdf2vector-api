@@ -1,5 +1,5 @@
 import os
-from fastapi import APIRouter, File, UploadFile, HTTPException
+from fastapi import APIRouter, File, UploadFile, HTTPException, Query as QueryParam
 from fastapi.responses import JSONResponse
 from app.models import Query, JobPosting
 from app.utils import (
@@ -8,7 +8,8 @@ from app.utils import (
     process_job_query,
     save_and_process_pdf,
     get_documents_in_database,
-    clear_database,
+    clear_pdf_database,
+    clear_scrape_database,
     pdf_folder_path,
     scrape_folder_path,
 )
@@ -23,26 +24,59 @@ router = APIRouter()
 
 @router.get("/healthcheck", tags=["Healthcheck"])
 async def healthcheck():
+    health_status = {
+        "status": "healthy",
+        "checks": {}
+    }
+
     try:
+        # Check PDF storage folder
         if not os.path.exists(pdf_folder_path):
             raise Exception("PDF storage folder does not exist")
-        
+        health_status["checks"]["pdf_storage"] = "OK"
+
+        # Check PDF upload directory
         pdf_directory = "pdf"
         if not os.path.exists(pdf_directory):
             raise Exception("PDF upload directory does not exist")
-        
-        test_query = "Test query"
-        process_query(test_query)
-        process_pdf_query(test_query)
-        
+        health_status["checks"]["pdf_upload"] = "OK"
+
+        # Check if we can list files in PDF directory
         try:
             os.listdir(pdf_directory)
+            health_status["checks"]["pdf_directory_access"] = "OK"
         except Exception as e:
-            raise Exception(f"Cannot access PDF directory: {str(e)}")
-        
-        return JSONResponse(content={"status": "healthy", "message": "All systems operational"}, status_code=200)
+            health_status["checks"]["pdf_directory_access"] = f"Error: {str(e)}"
+
+        # Test query processing
+        test_query = "Test query"
+        process_query(test_query)
+        health_status["checks"]["query_processing"] = "OK"
+
+        # Test PDF query processing
+        process_pdf_query(test_query)
+        health_status["checks"]["pdf_query_processing"] = "OK"
+
+        # Check ChromaDB for PDF
+        try:
+            embedding = FastEmbedEmbeddings()
+            Chroma(persist_directory=pdf_folder_path, embedding_function=embedding)
+            health_status["checks"]["chromadb_pdf"] = "OK"
+        except Exception as e:
+            health_status["checks"]["chromadb_pdf"] = f"Error: {str(e)}"
+
+        # Check ChromaDB for scraped data
+        try:
+            Chroma(persist_directory=scrape_folder_path, embedding_function=embedding)
+            health_status["checks"]["chromadb_scrape"] = "OK"
+        except Exception as e:
+            health_status["checks"]["chromadb_scrape"] = f"Error: {str(e)}"
+
+        return JSONResponse(content=health_status, status_code=200)
     except Exception as e:
-        return JSONResponse(content={"status": "unhealthy", "message": f"Healthcheck failed: {str(e)}"}, status_code=500)
+        health_status["status"] = "unhealthy"
+        health_status["error"] = str(e)
+        return JSONResponse(content=health_status, status_code=500)
 
 @router.get("/show_documents", tags=["Documents"])
 async def show_documents():
@@ -61,18 +95,21 @@ async def pdf_post(file: UploadFile = File(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/query_pdf", tags=["Documents"])
-async def query_pdf_post(query: Query):
-    result, sources = process_pdf_query(query.query, query.include_sources)
+async def query_pdf_post(
+    query: Query,
+    include_sources: bool = QueryParam(False, description="Include sources in the response")
+):
+    result, sources = process_pdf_query(query.query, include_sources)
     
-    if query.include_sources:
+    if include_sources:
         return JSONResponse(content={"answer": result, "sources": sources})
     else:
         return JSONResponse(content={"answer": result})
 
 @router.post("/clear_database", tags=["Documents"])
-async def clear_db():
+async def clear_pdf_db():
     try:
-        result = clear_database()
+        result = clear_pdf_database()
         return JSONResponse(content=result)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -124,10 +161,13 @@ async def scraped_data() -> dict:
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/query_jobs", tags=["Jobs"])
-async def query_jobs_post(query: Query):
-    result, sources = process_job_query(query.query, query.include_sources)
+async def query_jobs_post(
+    query: Query,
+    include_sources: bool = QueryParam(False, description="Include sources in the response")
+):
+    result, sources = process_job_query(query.query, include_sources)
     
-    if query.include_sources:
+    if include_sources:
         return JSONResponse(content={"answer": result, "sources": sources})
     else:
         return JSONResponse(content={"answer": result})
@@ -149,5 +189,13 @@ async def get_job_by_serial(serial_number: int):
             return JSONResponse(content={"job_data": job_data})
         else:
             raise HTTPException(status_code=404, detail=f"Job with serial number {serial_number} not found")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/clear_database_scrape", tags=["Jobs"])
+async def clear_scrape_db():
+    try:
+        result = clear_scrape_database()
+        return JSONResponse(content=result)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

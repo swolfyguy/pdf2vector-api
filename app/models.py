@@ -3,7 +3,6 @@ from typing import List, Dict, Optional
 
 class Query(BaseModel):
     query: str
-    include_sources: bool = False
 
 class Feature(BaseModel):
     Title: str

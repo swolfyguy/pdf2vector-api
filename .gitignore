@@ -1,34 +1,49 @@
-# Python cache files
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
 
-# Virtual environment
+# Virtual environments
 venv/
 env/
 .env
+.venv
+ENV/
 
 # FastAPI
 .pytest_cache/
 
-# IDE settings
+# IDEs and editors
 .vscode/
 .idea/
+*.swp
+*.swo
+*~
 
 # Logs
 *.log
+logs/
 
-# Database files
+# Databases
+*.db
+*.sqlite3
 
-# Uploaded PDFs
+# Uploaded files
 pdf/
+uploads/
 
 # OS generated files
 .DS_Store
 Thumbs.db
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Desktop.ini
 
 # Temporary files
 *.tmp
+*.bak
+*.swp
 
 # Distribution / packaging
 .Python
@@ -44,6 +59,7 @@ parts/
 sdist/
 var/
 wheels/
+share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
@@ -55,5 +71,55 @@ wheels/
 # Jupyter Notebook
 .ipynb_checkpoints
 
-# Environment variables file (if you use one)
+# Environment variables
 .env
+.env.local
+.env.*.local
+
+# Coverage reports
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pytest
+.pytest_cache/
+
+# Poetry
+poetry.lock
+
+# Pipenv
+Pipfile.lock
+
+# Node (in case of full-stack projects)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Compiled source
+*.com
+*.class
+*.dll
+*.exe
+*.o
+*.so
+
+# Packages
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+
+# Artifacts
+db_pdf/
+db_scrape/

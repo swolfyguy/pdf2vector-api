@@ -131,7 +131,7 @@ def get_documents_in_database():
     
     return list(unique_sources)
 
-def clear_database():
+def clear_pdf_database():
     embedding = FastEmbedEmbeddings()
     
     # Clear PDF database
@@ -139,12 +139,6 @@ def clear_database():
     vector_store_pdf.delete_collection()
     vector_store_pdf = Chroma(persist_directory=pdf_folder_path, embedding_function=embedding)
     vector_store_pdf.persist()
-    
-    # Clear scraped data database
-    vector_store_scrape = Chroma(persist_directory=scrape_folder_path, embedding_function=embedding)
-    vector_store_scrape.delete_collection()
-    vector_store_scrape = Chroma(persist_directory=scrape_folder_path, embedding_function=embedding)
-    vector_store_scrape.persist()
     
     # Delete all PDFs in the "pdf" directory
     pdf_directory = "pdf"
@@ -159,4 +153,15 @@ def clear_database():
             except Exception as e:
                 print(f'Failed to delete {file_path}. Reason: {e}')
     
-    return {"message": "Databases cleared and PDFs deleted successfully"}
+    return {"message": "PDF database cleared and PDFs deleted successfully"}
+
+def clear_scrape_database():
+    embedding = FastEmbedEmbeddings()
+    
+    # Clear scraped data database
+    vector_store_scrape = Chroma(persist_directory=scrape_folder_path, embedding_function=embedding)
+    vector_store_scrape.delete_collection()
+    vector_store_scrape = Chroma(persist_directory=scrape_folder_path, embedding_function=embedding)
+    vector_store_scrape.persist()
+    
+    return {"message": "Scraped job database cleared successfully"}
