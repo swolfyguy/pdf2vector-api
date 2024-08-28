@@ -13,14 +13,19 @@ from app.utils import (
     pdf_folder_path,
     scrape_folder_path,
 )
+from langchain_community.llms import Ollama
 from langchain_community.vectorstores import Chroma
 from langchain_community.embeddings import FastEmbedEmbeddings
+from langchain.chains import LLMChain
+from langchain.prompts import PromptTemplate
 from langchain.schema import Document
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 from scrape.scraper import get_all_jobs
 
 router = APIRouter()
+
+cached_llm = Ollama(model="llama3.1")
 
 @router.get("/healthcheck", tags=["Healthcheck"])
 async def healthcheck():
@@ -173,7 +178,10 @@ async def query_jobs_post(
         return JSONResponse(content={"answer": result})
 
 @router.get("/job/{serial_number}", tags=["Jobs"])
-async def get_job_by_serial(serial_number: int):
+async def get_job_by_serial(
+    serial_number: int,
+    question: str = QueryParam(None, description="Optional question about the job")
+):
     try:
         embedding = FastEmbedEmbeddings()
         vector_store = Chroma(persist_directory=scrape_folder_path, embedding_function=embedding)
@@ -186,7 +194,28 @@ async def get_job_by_serial(serial_number: int):
         
         if results:
             job_data = results[0].page_content
-            return JSONResponse(content={"job_data": job_data})
+            
+            if question:
+                # Create a prompt for the question
+                prompt = PromptTemplate.from_template(
+                    """
+                    <s>[INST] You are a job search assistant. Answer the following question based only on the provided job information. If the answer is not in the job data, say so. [/INST] </s>
+                    [INST] Job Information:
+                    {job_data}
+                    
+                    Question: {question}
+                    Answer:
+                    [/INST]
+                    """
+                )
+                
+                # Use the LLM to answer the question
+                llm_chain = LLMChain(llm=cached_llm, prompt=prompt)
+                response = llm_chain.run(job_data=job_data, question=question)
+                
+                return JSONResponse(content={"job_data": job_data, "question": question, "answer": response})
+            else:
+                return JSONResponse(content={"job_data": job_data})
         else:
             raise HTTPException(status_code=404, detail=f"Job with serial number {serial_number} not found")
     except Exception as e:

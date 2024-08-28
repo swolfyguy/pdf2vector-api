@@ -1,20 +1,25 @@
-# Use an official Python runtime as a parent image
+# Use an official Python runtime as the base image
 FROM python:3.9-slim
 
 # Set the working directory in the container
 WORKDIR /app
 
-# Copy the requirements file into the container
-COPY requirements.txt .
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    netcat-traditional \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install any needed packages specified in requirements.txt
+# Create necessary directories
+RUN mkdir -p pdf db_pdf db_scrape
+
+# Copy the current directory contents into the container at /app
+COPY . /app
+
+# Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the application code
-COPY . .
-
-# Expose port 8080 for the FastAPI application
+# Make port 8080 available to the world outside this container
 EXPOSE 8080
 
-# Run the FastAPI application
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080", "--reload"]
+# The CMD is specified in docker-compose.yml

@@ -1,27 +1,25 @@
 version: '3.8'
 
 services:
-  app:
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+
+  web:
     build: .
-    container_name: fastapi_app
     ports:
       - "8080:8080"
-    depends_on:
-      - chroma
+    volumes:
+      - .:/app
     environment:
-      - CHROMA_HOST=chroma
-      - CHROMA_PORT=8000
-    volumes:
-      - ./app:/app/app
-      - ./pdf:/app/pdf
-
-  chroma:
-    image: chromadb/chroma:latest
-    container_name: chroma
-    ports:
-      - "8000:8000"
-    volumes:
-      - chroma_data:/chroma/chroma
+      - PYTHONUNBUFFERED=1
+      - OLLAMA_HOST=http://ollama:11434
+    command: sh -c "while ! nc -z ollama 11434; do sleep 1; done && uvicorn app.main:app --host 0.0.0.0 --port 8080 --reload"
+    depends_on:
+      - ollama
 
 volumes:
-  chroma_data:
+  ollama_data:

@@ -29,7 +29,6 @@ logs/
 *.sqlite3
 
 # Uploaded files
-pdf/
 uploads/
 
 # OS generated files
