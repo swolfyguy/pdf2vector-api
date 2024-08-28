@@ -25,8 +25,8 @@ This project is a FastAPI-based web service that provides job search functionali
 
 1. Clone the repository:
    ```
-   git clone https://github.com/your-username/job-search-assistant-api.git
-   cd job-search-assistant-api
+   git clone https://github.com/swolfyguy/pdf2vector-api.git
+   cd pdf2vector-api
    ```
 
 2. Create a virtual environment and activate it:
@@ -41,6 +41,11 @@ This project is a FastAPI-based web service that provides job search functionali
    ```
 
 4. Make sure you have Ollama installed and running with the `llama3.1` model available.
+
+5. Make sure that the Ollama server is running.
+   ```
+   ollama serve
+   ```
 
 ## Usage
 
