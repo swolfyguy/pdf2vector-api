@@ -120,5 +120,6 @@ yarn-error.log*
 *.zip
 
 # Artifacts
+pdf/
 db_pdf/
 db_scrape/
